@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data Visualization in R with ggplot2 📊</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Pete Lawson, Ph.D. Harshil Desai, TA " />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <link href="libs/countdown/countdown.css" rel="stylesheet" />
+    <script src="libs/countdown/countdown.js"></script>
+    <link rel="stylesheet" href="../slides-style.css" type="text/css" />
+    <link rel="stylesheet" href="../xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Data Visualization in R with ggplot2 📊
+]
+.subtitle[
+## An Introductory Workshop
+]
+.author[
+### Pete Lawson, Ph.D.<br>Harshil Desai, TA<br>
+]
+.institute[
+### <br>JHU Data Services
+]
+.date[
+### October 12<sup>th</sup>, 2022
+]
+
+---
+
+
+
+
+
+layout: true
+
+---
+
+
+
+class: top
+
+## Workshop guidelines
+
+- **Workshop will be recorded.** We will make our best effort to respect the privacy of participants. Chat will not be recorded. 
+
+.pull-left[
+- **Help** is always available.
+  - Use the Zoom chat (private or public) to ask a question.
+  - Raise your hand 🤚.
+  - And you can always un-mute and ask.
+]
+
+.pull-right[
+&lt;blockquote&gt;
+Help will always be given at Hogwarts to those who ask for it.
+.right[-- &lt;cite&gt;Albus Dumbledore&lt;/cite&gt;]
+&lt;/blockquote&gt;
+]
+
+---
+
+class: middle
+
+# Data visualization
+
+---
+
+## Data visualization
+
+&gt; *"The simple graph has brought more information to the data analyst’s mind than any other device." — John Tukey*
+
+- Data visualization is the creation and study of the visual representation of data.
+- There are many tools for visualizing data (R is one of them), and many approaches/systems within R for making data visualizations (**ggplot2** is one of them, and that's what we're going to use).
+
+---
+
+## ggplot2 `\(\in\)` tidyverse
+
+.pull-left[
+&lt;img src="img/ggplot2-part-of-tidyverse.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+library(tidyverse)
+```
+- **ggplot2** is tidyverse's data visualization package
+- The `gg` in "ggplot2" stands for Grammar of Graphics
+- It is inspired by the book **Grammar of Graphics** by Leland Wilkinson
+]
+
+---
+
+## Grammar of Graphics
+
+A grammar of graphics is a tool that enables us to concisely describe the components of a graphic.
+
+&lt;img src="img/grammar-of-graphics.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+.footnote[ 
+Source: [BloggoType](http://bloggotype.blogspot.com/2016/08/holiday-notes2-grammar-of-graphics.html)
+]
+
+---
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+  labs(title = "Mass vs. height of Starwars characters",
+       x = "Height (cm)", y = "Weight (kg)")
+```
+
+```
+## Warning: Removed 28 rows containing missing values (geom_point).
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-5-1.png" width="60%" /&gt;
+
+---
+
+.discussion[
+- What are the functions doing the plotting? 
+- What is the dataset being plotted? 
+- Which variable is on the x-axis and which variable is on the y-axis? 
+- What does the warning mean?
+]
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+  labs(
+    title = "Mass vs. height of Starwars characters",
+    x = "Height (cm)", 
+    y = "Weight (kg)"
+    )
+```
+
+```
+## Warning: Removed 28 rows containing missing values (geom_point).
+```
+
+---
+
+.discussion[
+What does `geom_smooth()` do?
+]
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+* geom_smooth() +
+  labs(title = "Mass vs. height of Starwars characters",
+       x = "Height (cm)", y = "Weight (kg)")
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-7-1.png" width="50%" /&gt;
+
+---
+
+## Hello ggplot2!
+
+- `ggplot()` is the main function in ggplot2 
+- Plots are constructed in layers
+- Structure of the code for plots can be summarized as
+
+```r
+ggplot(data = [dataset], 
+       mapping = aes(x = [x-variable], y = [y-variable])) +
+   geom_xxx() +
+   other options
+```
+- For help with the ggplot2
+  + [ggplot2.tidyverse.org](http://ggplot2.tidyverse.org/)
+  + [ggplot cheat sheet](https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf)
+
+---
+
+class: middle
+
+# Visualizing Star Wars
+
+---
+
+## Dataset terminology
+
+- Each row is an **observation**
+- Each column is a **variable**
+
+
+```
+## # A tibble: 87 × 14
+##   name     height  mass hair_…¹ skin_…² eye_c…³ birth…⁴ sex   gender homew…⁵ species films
+##   &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;lis&gt;
+## 1 Luke Sk…    172    77 blond   fair    blue       19   male  mascu… Tatooi… Human   &lt;chr&gt;
+## 2 C-3PO       167    75 &lt;NA&gt;    gold    yellow    112   none  mascu… Tatooi… Droid   &lt;chr&gt;
+## 3 R2-D2        96    32 &lt;NA&gt;    white,… red        33   none  mascu… Naboo   Droid   &lt;chr&gt;
+## 4 Darth V…    202   136 none    white   yellow     41.9 male  mascu… Tatooi… Human   &lt;chr&gt;
+## 5 Leia Or…    150    49 brown   light   brown      19   fema… femin… Aldera… Human   &lt;chr&gt;
+## 6 Owen La…    178   120 brown,… light   blue       52   male  mascu… Tatooi… Human   &lt;chr&gt;
+## # … with 81 more rows, 2 more variables: vehicles &lt;list&gt;, starships &lt;list&gt;, and
+## #   abbreviated variable names ¹​hair_color, ²​skin_color, ³​eye_color, ⁴​birth_year,
+## #   ⁵​homeworld
+```
+
+---
+
+## Luke Skywalker
+
+![luke-skywalker](img/luke-skywalker.png)
+
+---
+
+## What's in the Star Wars data?
+
+
+```r
+glimpse(starwars)
+```
+
+```
+## Rows: 87
+## Columns: 14
+## $ name       &lt;chr&gt; "Luke Skywalker", "C-3PO", "R2-D2", "Darth Vader", "Leia Organa", "Ow…
+## $ height     &lt;int&gt; 172, 167, 96, 202, 150, 178, 165, 97, 183, 182, 188, 180, 228, 180, 1…
+## $ mass       &lt;dbl&gt; 77.0, 75.0, 32.0, 136.0, 49.0, 120.0, 75.0, 32.0, 84.0, 77.0, 84.0, N…
+## $ hair_color &lt;chr&gt; "blond", NA, NA, "none", "brown", "brown, grey", "brown", NA, "black"…
+## $ skin_color &lt;chr&gt; "fair", "gold", "white, blue", "white", "light", "light", "light", "w…
+## $ eye_color  &lt;chr&gt; "blue", "yellow", "red", "yellow", "brown", "blue", "blue", "red", "b…
+## $ birth_year &lt;dbl&gt; 19.0, 112.0, 33.0, 41.9, 19.0, 52.0, 47.0, NA, 24.0, 57.0, 41.9, 64.0…
+## $ sex        &lt;chr&gt; "male", "none", "none", "male", "female", "male", "female", "none", "…
+## $ gender     &lt;chr&gt; "masculine", "masculine", "masculine", "masculine", "feminine", "masc…
+## $ homeworld  &lt;chr&gt; "Tatooine", "Tatooine", "Naboo", "Tatooine", "Alderaan", "Tatooine", …
+## $ species    &lt;chr&gt; "Human", "Droid", "Droid", "Human", "Human", "Human", "Human", "Droid…
+## $ films      &lt;list&gt; &lt;"The Empire Strikes Back", "Revenge of the Sith", "Return of the Je…
+## $ vehicles   &lt;list&gt; &lt;"Snowspeeder", "Imperial Speeder Bike"&gt;, &lt;&gt;, &lt;&gt;, &lt;&gt;, "Imperial Spee…
+## $ starships  &lt;list&gt; &lt;"X-wing", "Imperial shuttle"&gt;, &lt;&gt;, &lt;&gt;, "TIE Advanced x1", &lt;&gt;, &lt;&gt;, &lt;…
+```
+
+---
+
+## Another look at Star Wars data
+
+.pull-left[
+The **skimr** package provides summary statistics the user can skim quickly to 
+understand their data.
+
+```r
+library(skimr)
+skim(starwars)
+```
+]
+.pull-right[
+&lt;img src="img/skimr.png" width="50%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.xsmall[
+
+```
+## ── Data Summary ────────────────────────
+##                            Values  
+## Name                       starwars
+## Number of rows             87      
+## Number of columns          14      
+## _______________________            
+## Column type frequency:             
+##   character                8       
+##   list                     3       
+##   numeric                  3       
+## ________________________           
+## Group variables            None    
+## 
+## ── Variable type: character ────────────────────────────────────────────────────────────────────────────────────────────
+##   skim_variable n_missing complete_rate min max empty n_unique whitespace
+## 1 name                  0         1       3  21     0       87          0
+## 2 hair_color            5         0.943   4  13     0       12          0
+## 3 skin_color            0         1       3  19     0       31          0
+## 4 eye_color             0         1       3  13     0       15          0
+## 5 sex                   4         0.954   4  14     0        4          0
+## 6 gender                4         0.954   8   9     0        2          0
+## 7 homeworld            10         0.885   4  14     0       48          0
+## 8 species               4         0.954   3  14     0       37          0
+## 
+## ── Variable type: list ─────────────────────────────────────────────────────────────────────────────────────────────────
+##   skim_variable n_missing complete_rate n_unique min_length max_length
+## 1 films                 0             1       24          1          7
+## 2 vehicles              0             1       11          0          2
+## 3 starships             0             1       17          0          5
+## 
+## ── Variable type: numeric ──────────────────────────────────────────────────────────────────────────────────────────────
+##   skim_variable n_missing complete_rate  mean    sd p0   p25 p50   p75 p100 hist 
+## 1 height                6         0.931 174.   34.8 66 167   180 191    264 ▁▁▇▅▁
+## 2 mass                 28         0.678  97.3 169.  15  55.6  79  84.5 1358 ▇▁▁▁▁
+## 3 birth_year           44         0.494  87.6 155.   8  35    52  72    896 ▇▁▁▁▁
+```
+]
+
+---
+
+## What's in the Star Wars data?
+
+.pull-left[
+.discussion[
+How many rows and columns does this dataset have? What does each row represent? What does each column represent?
+]
+
+```r
+?starwars
+```
+]
+.pull-right[
+&lt;img src="img/starwars-help-annotated.png" width="100%" /&gt;
+]
+
+---
+
+## Mass vs. height
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point()
+```
+
+```
+## Warning: Removed 28 rows containing missing values (geom_point).
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-16-1.png" width="60%" /&gt;
+
+---
+
+.your-turn[
+- Go to RStudio Cloud and start the second assignment: `02 - Visualize Data`.
+- Open the first R Markdown file: `01-starwars.Rmd`.
+- Answer the first two questions, and if time allows also the third one.
+- But, a mini R Markdown review before you get started!
+]
+
+<div class="countdown" id="timer_935eaaeb" data-update-every="1" tabindex="0" style="right:0;bottom:0;">
+<div class="countdown-controls"><button class="countdown-bump-down">&minus;</button><button class="countdown-bump-up">&plus;</button></div>
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+.footnote[
+RStudio Cloud workspace for this bootcamp  
+is at  [rstd.io/bootcamper-cloud](https://rstd.io/bootcamper-cloud).
+]
+
+---
+
+## Labels
+
+.small[
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+* labs(title = "Mass vs. height of Starwars characters",
+*      x = "Height (cm)",
+*      y = "Weight (kg)")
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
+]
+
+---
+
+## Mass vs. height
+
+.discussion[
+How would you describe this relationship? What other variables would help us understand data points that don't follow the overall trend? Who is the not so tall but really chubby character?
+]
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-19-1.png" width="60%" /&gt;
+
+---
+
+## Jabba!
+
+&lt;img src="img/jabbaplot.png" width="768" /&gt;
+
+---
+
+## Additional variables
+
+We can map additional variables to various features of the plot:
+
+- aesthetics
+    - shape
+    - colour
+    - fill
+    - size
+    - alpha (transparency)
+- faceting: small multiples displaying different subsets
+
+---
+
+class: middle
+
+# Aesthetics
+
+---
+
+## Aesthetics options
+
+Visual characteristics of plotting characters that can be **mapped to a specific variable**
+in the data are
+
+- `color`
+- `size`
+- `fill`
+- `shape`
+- `alpha` (transparency)
+
+---
+
+## Mass vs. height + gender
+
+
+```r
+ggplot(data = starwars, 
+       mapping = aes(x = height, y = mass, color = gender)) +
+  geom_point()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
+
+---
+
+## Mass vs. height + gender
+
+
+```r
+ggplot(data = starwars, 
+       mapping = aes(x = height, y = mass, color = gender, 
+*                    size = birth_year)) +
+  geom_point()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-22-1.png" width="65%" /&gt;
+
+---
+
+## Fix it up!
+
+.midi[
+
+```r
+ggplot(data = starwars, 
+       mapping = aes(x = height, 
+                     y = mass, 
+                     color = gender, 
+                     size = birth_year)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Mass vs. height of Starwars characters",
+       subtitle = "by gender and birth year",
+       x = "Height (cm)", 
+       y = "Weight (kg)",
+       color = "Gender",
+       size = "Birth year") +
+  theme_minimal() +
+  theme(legend.direction = "horizontal", 
+        legend.position = "bottom", 
+        legend.box = "vertical")
+```
+]
+
+---
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+
+---
+
+## Mass vs. height + gender
+
+Let's now increase the size of all points *not* based on the values of a 
+variable in the data, i.e. **set** size instead of **map** size:
+
+.midi[
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass, color = gender)) +
+* geom_point(size = 2)
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-25-1.png" width="63%" /&gt;
+]
+
+---
+
+## Aesthetics summary
+
+- Continuous variable are measured on a continuous scale
+- Discrete variables are measured (or often counted) on a discrete scale
+
+aesthetics    | discrete                 | continuous
+------------- | ------------------------ | ------------
+color         | rainbow of colors        | gradient
+size          | discrete steps           | linear mapping between radius and value
+shape         | different shape for each | *shouldn't (and doesn't) work*
+
+- Use aesthetics for mapping features of a plot to a variable, define the 
+features in the geom for customization **not** mapped to a variable
+
+---
+
+class: middle
+
+# Faceting
+
+---
+
+## Faceting
+
+- Smaller plots that display different subsets of the data
+- Useful for exploring conditional relationships and large data
+
+---
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+* facet_grid(. ~ gender) +
+  geom_point() +
+  labs(title = "Mass vs. height of Starwars characters",
+*      subtitle = "Faceted by gender")
+```
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+
+---
+
+.your-turn[
+Look through the next three slides titled Facet 1, 2, and 3 describe what each plot displays. Think about how the code relates to the output.
+
+**Note:** The plots in the next few slides do not have proper titles, axis labels, etc. because we want you to figure out what's happening in the plots. But you should always label your plots!
+]
+
+<div class="countdown" id="timer_cb0357ed" data-update-every="1" tabindex="0" style="right:0;bottom:0;">
+<div class="countdown-controls"><button class="countdown-bump-down">&minus;</button><button class="countdown-bump-up">&plus;</button></div>
+<code class="countdown-time"><span class="countdown-digits minutes">03</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+### Facet 1
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+  facet_grid(gender ~ .)
+```
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+
+---
+
+### Facet 2
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+  facet_grid(. ~ gender)
+```
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+
+---
+
+### Facet 3
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height, y = mass)) +
+  geom_point() +
+  facet_wrap(~ eye_color)
+```
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+
+---
+
+## Facet summary
+
+- `facet_grid()`: 
+    - 2d grid
+    - `rows ~ cols`
+    - use `.` for no split
+- `facet_wrap()`: 1d ribbon wrapped into 2d
+
+---
+
+class: middle
+
+# Why do we visualize?
+
+---
+
+.discussion[
+Do you see anything out of the ordinary?
+]
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
+
+---
+
+.discussion[
+How are people reporting lower vs. higher values of FB visits?
+]
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+
+---
+
+class: middle
+
+# Identifying variables
+
+---
+
+## Types of variables
+
+- **Numerical variables** can be classified as **continuous** or **discrete** based on whether or not the variable can take on an infinite number of values or only non-negative whole numbers, respectively. 
+- If the variable is **categorical**, we can determine if it is **ordinal** based on whether or not the levels have a natural ordering. R uses the term 
+**factor** for most categorical data.
+
+---
+
+class: middle
+
+# Visualizing numerical data
+
+---
+
+## Histograms
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height)) +
+  geom_histogram(binwidth = 10)
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-33-1.png" width="75%" /&gt;
+
+---
+
+## Density plots
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = height)) +
+  geom_density()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-34-1.png" width="75%" /&gt;
+
+---
+
+## Box plots
+
+
+```r
+ggplot(data = starwars, mapping = aes(y = height)) +
+  geom_boxplot()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-35-1.png" width="60%" /&gt;
+
+---
+
+class: middle
+
+# Visualizing relationships between numerical and categorical data
+
+---
+
+## Side-by-side box plots
+
+
+```r
+ggplot(data = starwars, mapping = aes(y = height, x = gender)) +
+  geom_boxplot()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-36-1.png" width="75%" /&gt;
+
+---
+
+## Scatter plot...
+
+This is not a great representation of these data.
+
+
+```r
+ggplot(data = starwars, mapping = aes(y = height, x = gender)) +
+  geom_point()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-37-1.png" width="60%" /&gt;
+
+---
+
+## Violin plots
+
+
+```r
+ggplot(data = starwars, mapping = aes(y = height, x = gender)) +
+  geom_violin()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-38-1.png" width="75%" /&gt;
+
+---
+
+## Jitter plot
+
+
+
+
+
+```r
+ggplot(data = starwars, mapping = aes(y = height, x = gender)) +
+  geom_jitter()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-40-1.png" width="75%" /&gt;
+
+---
+
+## Beeswarm plots
+
+
+```r
+library(ggbeeswarm)
+ggplot(data = starwars, mapping = aes(y = height, x = gender)) +
+  geom_beeswarm()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-41-1.png" width="70%" /&gt;
+
+---
+
+class: middle
+
+# Visualizing categorical data
+
+---
+
+## Bar plots
+
+
+```r
+ggplot(data = starwars, mapping = aes(x = gender)) +
+  geom_bar()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-42-1.png" width="70%" /&gt;
+
+---
+
+## Segmented bar plots, counts
+
+.midi[
+
+```r
+ggplot(data = starwars, mapping = aes(x = gender, fill = hair_color)) +
+  geom_bar()
+```
+
+![](data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+]
+
+---
+
+## Recode hair color
+
+Using the `fct_other()` function from the **forcats** package, which is also part of the **tidyverse**.
+
+
+```r
+starwars &lt;- starwars %&gt;%
+  mutate(
+    hair_color2 = fct_lump_min(hair_color, min = 10)
+  )
+```
+
+---
+
+## Segmented bar plots, counts
+
+
+```r
+ggplot(data = starwars, 
+       mapping = aes(y = gender, fill = hair_color2)) +
+  geom_bar()
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-45-1.png" width="65%" /&gt;
+
+---
+
+## Segmented bar plots, proportions
+
+
+```r
+ggplot(data = starwars, 
+       mapping = aes(y = gender, fill = hair_color2)) +
+  geom_bar(position = "fill") +
+  labs(x = "proportion")
+```
+
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-46-1.png" width="65%" /&gt;
+
+---
+
+.discussion[
+Which bar plot is a more useful representation for visualizing the relationship between gender and hair color?
+]
+
+.pull-left[
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-47-1.png" width="95%" /&gt;
+]
+.pull-right[
+&lt;img src="data-vis-in-r-with-ggplot_files/figure-html/unnamed-chunk-48-1.png" width="95%" /&gt;
+]
+
+---
+
+.your-turn[
+- Go to RStudio Cloud and start the second assignment: `02 - Visualize Data`
+- Open the first R Markdown file: `02-why.visualize.Rmd`
+- Knit the document
+]
+
+<div class="countdown" id="timer_37f94060" data-update-every="1" tabindex="0" style="right:0;bottom:0;">
+<div class="countdown-controls"><button class="countdown-bump-down">&minus;</button><button class="countdown-bump-up">&plus;</button></div>
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+.footnote[
+RStudio Cloud workspace for this bootcamp  
+is at  [rstd.io/bootcamper-cloud](https://rstd.io/bootcamper-cloud).
+]
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "solarized-light",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9",
+"slideNumberFormat": "<div class=\"progress-bar-container\">\n  <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">\n  </div>\n</div>"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
